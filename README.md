@@ -10,40 +10,37 @@ See [the Kafka
 documentation](https://kafka.apache.org/documentation/#connect_transforms) for
 more details about configuring transformations on how to install transforms.
 
-### `GenerateIndexFromResourceInfo`
+### `GenerateIndexFromResource`
 
-This transformation builds an index based on a group of values contained in the body of the result, separated by $.
+This transformation builds an index based on a group of values contained in the
+body of the result, separated by $.
 
-- `com.github.edfiallianceoss.kafka.connect.transforms.GenerateIndexFromResourceInfo$Value` -
-  works on values.
+- `com.github.edfiallianceoss.kafka.connect.transforms.GenerateIndexFromResource$Value`
+  - works on values.
 
 The transformation defines the following configurations:
 
-- `field.name` - The name of the field which should be used as the topic name.
-  If `null` or empty, the entire key or value is used (and assumed to be a
-  string). By default is `null`.
-- `skip.missing.or.null` - In case the source of the new topic name is `null` or
-  missing, should a record be silently passed without transformation. By
-  default, is `false`.
+- `field.name` - Comma separated list of fields to be included into building the
+  Index. This fields will be separated by $ and will add `descriptor` at the end
+  if resource is marked as such.
 
 Here is an example of this transformation configuration:
 
 ```properties
-transforms=ExtractTopicFromValueField
-transforms.ExtractTopicFromValueField.type=com.github.edfiallianceoss.kafka.connect.transforms.ExtractTopic$Value
-transforms.ExtractTopicFromValueField.field.name=inner_field_name
+transforms=GenerateIndexFromResource
+transforms.GenerateIndexFromResource.type=com.github.edfiallianceoss.kafka.connect.transforms.GenerateIndexFromResource$Value
+transforms.GenerateIndexFromResource.field.name=projectName,resourceVersion,resourceName
 ```
 
-## License
+## Legal Information
 
-This project is licensed under the [Apache License, Version 2.0](LICENSE).
+Copyright (c) 2023 Ed-Fi Alliance, LLC and contributors.
 
-The transformation `GenerateIndexFromResourceInfo` is based on the [ExtractTopic
-transformation](https://github.com/Aiven-Open/transforms-for-apache-kafka-connect/blob/master/src/main/java/io/aiven/kafka/connect/transforms/ExtractTopic.java)
-by Aiven Open. Licensed under Apache License, Version 2.0.
+Licensed under the [Apache License, Version 2.0](https://github.com/Ed-Fi-Exchange-OSS/Meadowlark/blob/main/LICENSE) (the "License").
 
-## Trademarks
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
 
-Apache Kafka and Apache Kafka Connect are either registered trademarks or
-trademarks of the Apache Software Foundation in the United States and/or other
-countries.
+See [NOTICES](./NOTICES.md) for additional copyright and license notifications.

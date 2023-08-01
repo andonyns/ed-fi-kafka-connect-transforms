@@ -1,18 +1,9 @@
-/*
- * Copyright 2019 Aiven Oy
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-License-Identifier: Apache-2.0
+
+// Licensed to the Ed-Fi Alliance under one or more agreements.
+// The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+// See the LICENSE and NOTICES files in the project root for more information.
+
 import org.gradle.util.DistributionLocator
 import org.gradle.util.GradleVersion
 import org.gradle.util.VersionNumber
@@ -26,12 +17,6 @@ plugins {
 
     // https://docs.gradle.org/current/userguide/checkstyle_plugin.html
     id 'checkstyle'
-
-    // https://docs.gradle.org/current/userguide/idea_plugin.html
-    id 'idea'
-
-    // https://ajoberstar.org/grgit/grgit-gradle.html
-    id 'org.ajoberstar.grgit' version '5.2.0'
 }
 
 repositories {
@@ -42,9 +27,8 @@ sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
 ext {
-    kafkaVersion = "2.0.1"
-    testcontainersVersion = "1.18.3"
-    debeziumVersion = "1.3.0.Final"
+    kafkaVersion = "2.3.0"
+    debeziumVersion = "2.3.0.Final"
 }
 
 distributions {
@@ -69,27 +53,6 @@ wrapper {
     }
 }
 
-sourceSets {
-    integrationTest {
-        java.srcDir file('src/integration-test/java')
-        resources.srcDir file('src/integration-test/resources')
-        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
-        runtimeClasspath += output + compileClasspath
-    }
-}
-
-idea {
-    module {
-        testSourceDirs += project.sourceSets.integrationTest.java.srcDirs
-        testSourceDirs += project.sourceSets.integrationTest.resources.srcDirs
-    }
-}
-
-configurations {
-    integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntime.extendsFrom testRuntimeOnly
-}
-
 dependencies {
     compileOnly "org.apache.kafka:connect-api:$kafkaVersion"
     compileOnly "io.debezium:debezium-api:$debeziumVersion"
@@ -98,49 +61,17 @@ dependencies {
 
     testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
     testImplementation "org.apache.kafka:connect-api:$kafkaVersion"
-    testImplementation "org.testcontainers:junit-jupiter:$testcontainersVersion"
     testImplementation "io.debezium:debezium-api:$debeziumVersion"
     testImplementation "org.assertj:assertj-core:3.24.2"
 
     testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:2.20.0"
     testRuntimeOnly "org.apache.logging.log4j:log4j-api:2.20.0"
     testRuntimeOnly "org.apache.logging.log4j:log4j-core:2.20.0"
-
-    integrationTestImplementation "org.apache.kafka:connect-api:$kafkaVersion"
-    integrationTestImplementation("org.apache.kafka:connect-runtime:$kafkaVersion") {
-        exclude group: "org.slf4j", module: "slf4j-log4j12"
-    }
-    integrationTestImplementation "org.apache.kafka:connect-json:$kafkaVersion"
-    integrationTestImplementation "org.apache.kafka:connect-transforms:$kafkaVersion"
-
-    integrationTestImplementation "org.testcontainers:junit-jupiter:$testcontainersVersion"
-    integrationTestImplementation "org.testcontainers:kafka:$testcontainersVersion" // this is not Kafka version
-    // Make test utils from 'test' available in 'integration-test'
-    integrationTestImplementation sourceSets.test.output
 }
 
 checkstyle {
     toolVersion "8.21"
 }
-
-task integrationTest(type: Test) {
-    description = 'Runs the integration tests.'
-    group = 'verification'
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
-
-    dependsOn test, distTar
-
-    useJUnitPlatform()
-
-    // Run always.
-    outputs.upToDateWhen { false }
-
-    // Pass the distribution file path to the tests.
-    systemProperty("integration-test.distribution.file.path", distTar.archiveFile.get().asFile.path)
-    systemProperty("integration-test.classes.path", sourceSets.integrationTest.output.classesDirs.getAsPath())
-}
-check.dependsOn integrationTest
 
 test {
     useJUnitPlatform {
@@ -149,7 +80,7 @@ test {
 }
 
 processResources {
-    filesMatching('transforms-for-apache-kafka-connect-version.properties') {
+    filesMatching('ed-fi-kafka-connect-transforms-version.properties') {
         expand(version: version)
     }
 }
@@ -159,72 +90,6 @@ jar {
         attributes(
                 'Version': "${getArchiveVersion()}"
         )
-    }
-}
-
-task releaseCommitsAndTag() {
-    description 'Make release commits and the tag necessary for release'
-    group 'GitHub release'
-
-    doFirst {
-        checkReleasePrerequisites()
-    }
-
-    outputs.upToDateWhen {
-        def tag = releaseTag()
-        def tagExists = grgit.tag.list().stream().anyMatch { it.getName() == tag }
-        if (tagExists) {
-            logger.quiet("Tag $tag exists")
-        }
-        return tagExists
-    }
-
-    doLast {
-        def releaseMessage = "Release version $releaseVersion"
-        def tag = releaseTag()
-
-        setVersionInGradleProperties(releaseVersion)
-
-        logger.quiet('Committing')
-        grgit.add(patterns: ['gradle.properties'])
-        grgit.commit(message: releaseMessage)
-
-        logger.quiet('Tagging with tag {}', tag)
-        grgit.tag.add(name: tag, annotate: true, message: releaseMessage)
-
-        setVersionInGradleProperties(nextSnapshotVersion)
-
-        logger.quiet('Committing')
-        grgit.add(patterns: ['gradle.properties'])
-        grgit.commit(message: "Bump version to $nextSnapshotVersion")
-    }
-}
-
-def checkReleasePrerequisites() {
-    if (!project.hasProperty('releaseVersion')) {
-        throw new GradleException('releaseVersion property is not set')
-    }
-
-    if (!(releaseVersion ==~ /\d+\.\d+\.\d+/)) {
-        throw new GradleException("Invalid releaseVersion format, must be 'x.y.z'")
-    }
-
-    if (!project.hasProperty('nextSnapshotVersion')) {
-        throw new GradleException('nextSnapshotVersion property is not set')
-    }
-
-    if (!(nextSnapshotVersion ==~ /\d+\.\d+\.\d+-SNAPSHOT/)) {
-        throw new GradleException("Invalid nextSnapshotVersion format, must be 'x.y.z-SNAPSHOT'")
-    }
-
-    def releaseVersionParsed = VersionNumber.parse(releaseVersion)
-    def nextSnapshotVersionParsed = VersionNumber.parse(nextSnapshotVersion)
-    if (nextSnapshotVersionParsed.getBaseVersion() <= releaseVersionParsed.getBaseVersion()) {
-        throw new GradleException('Next snapshot version must be higher than release version')
-    }
-
-    if (grgit.branch.current().getName() != 'master') {
-        throw new GradleException("Repository must be on branch 'master'")
     }
 }
 
@@ -240,26 +105,6 @@ def setVersionInGradleProperties(ver) {
         }
     }
     file('gradle.properties.new').renameTo('gradle.properties')
-}
-
-task releasePush() {
-    description 'Push commits and release tag'
-    group 'GitHub release'
-
-    dependsOn releaseCommitsAndTag
-
-    outputs.upToDateWhen {
-        return false
-    }
-
-    doLast {
-        def githubRepo = 'https://github.com/aiven/transforms-for-apache-kafka-connect'
-
-        grgit.push(tags: false, dryRun: false)
-        grgit.push(tags: true, dryRun: false)
-        logger.warn('Please visit {}/releases/tag/{} and add the distribution files and changelog', githubRepo, releaseTag())
-    }
-
 }
 
 def releaseTag() {
