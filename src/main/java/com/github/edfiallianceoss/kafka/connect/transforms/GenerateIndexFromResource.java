@@ -64,20 +64,23 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
             throw new DataException(dataPlace() + " must specify one or more field names comma separated.");
         }
 
-        List<String> fieldList = Stream.of(config.fieldName().get().split(","))
+        final List<String> fieldList = Stream.of(config.fieldName().get().split(","))
                 .map(String::trim)
                 .collect(Collectors.toList());
 
+        final StringBuilder topicResult = new StringBuilder();
         final String separator = "$";
-        StringBuilder topicResult = new StringBuilder();
 
         fieldList.forEach(field -> {
-            topicResult.append(topicNameFromNamedField(record.toString(), schemaAndValue.value(), field).get() + separator);
+            topicResult.append(
+                topicNameFromNamedField(record.toString(), 
+                                        schemaAndValue.value(), 
+                                        field).get() + separator);
         });
 
         topicResult.replace(topicResult.length() - 1, topicResult.length(), "");
 
-        if(record.toString().contains("isDescriptor=true")) {
+        if (record.toString().contains("isDescriptor=true")) {
             topicResult.append("descriptor");
         }
 

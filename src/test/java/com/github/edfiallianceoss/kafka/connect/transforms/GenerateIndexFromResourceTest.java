@@ -191,7 +191,8 @@ abstract class GenerateIndexFromResourceTest {
         assertThat(result).isEqualTo(setNewTopic(originalRecord, NEW_TOPIC));
     }
 
-    private GenerateIndexFromResource<SinkRecord> transformation(final String fieldName, final boolean skipMissingOrNull) {
+    private GenerateIndexFromResource<SinkRecord> transformation(final String fieldName, 
+                                                                 final boolean skipMissingOrNull) {
         final Map<String, String> props = new HashMap<>();
         if (fieldName != null) {
             props.put("field.name", fieldName);
