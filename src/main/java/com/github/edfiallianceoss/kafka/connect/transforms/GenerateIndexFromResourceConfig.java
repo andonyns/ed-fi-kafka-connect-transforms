@@ -22,7 +22,7 @@ import java.util.Optional;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 
-class ExtractTopicConfig extends AbstractConfig {
+class GenerateIndexFromResourceConfig extends AbstractConfig {
     public static final String FIELD_NAME_CONFIG = "field.name";
     private static final String FIELD_NAME_DOC =
         "The name of the field which should be used as the topic name. "
@@ -33,7 +33,7 @@ class ExtractTopicConfig extends AbstractConfig {
         "In case the source of the new topic name is null or missing, "
         + "should a record be silently passed without transformation.";
 
-    ExtractTopicConfig(final Map<?, ?> originals) {
+    GenerateIndexFromResourceConfig(final Map<?, ?> originals) {
         super(config(), originals);
     }
 

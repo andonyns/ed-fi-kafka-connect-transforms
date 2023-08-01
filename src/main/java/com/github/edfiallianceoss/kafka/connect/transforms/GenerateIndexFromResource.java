@@ -29,7 +29,7 @@ import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.transforms.Transformation;
 
-public abstract class ExtractTopic<R extends ConnectRecord<R>> implements Transformation<R> {
+public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> implements Transformation<R> {
 
     private static final List<Class<?>> SUPPORTED_VALUE_CLASS_TO_CONVERT_FROM = Arrays.asList(
         Byte.class,
@@ -42,16 +42,16 @@ public abstract class ExtractTopic<R extends ConnectRecord<R>> implements Transf
         String.class
     );
 
-    private ExtractTopicConfig config;
+    private GenerateIndexFromResourceConfig config;
 
     @Override
     public ConfigDef config() {
-        return ExtractTopicConfig.config();
+        return GenerateIndexFromResourceConfig.config();
     }
 
     @Override
     public void configure(final Map<String, ?> settings) {
-        this.config = new ExtractTopicConfig(settings);
+        this.config = new GenerateIndexFromResourceConfig(settings);
     }
 
     @Override
@@ -139,7 +139,7 @@ public abstract class ExtractTopic<R extends ConnectRecord<R>> implements Transf
         }
     }
 
-    public static class Key<R extends ConnectRecord<R>> extends ExtractTopic<R> {
+    public static class Key<R extends ConnectRecord<R>> extends GenerateIndexFromResource<R> {
         @Override
         protected SchemaAndValue getSchemaAndValue(final R record) {
             return new SchemaAndValue(record.keySchema(), record.key());
@@ -151,7 +151,7 @@ public abstract class ExtractTopic<R extends ConnectRecord<R>> implements Transf
         }
     }
 
-    public static class Value<R extends ConnectRecord<R>> extends ExtractTopic<R> {
+    public static class Value<R extends ConnectRecord<R>> extends GenerateIndexFromResource<R> {
         @Override
         protected SchemaAndValue getSchemaAndValue(final R record) {
             return new SchemaAndValue(record.valueSchema(), record.value());

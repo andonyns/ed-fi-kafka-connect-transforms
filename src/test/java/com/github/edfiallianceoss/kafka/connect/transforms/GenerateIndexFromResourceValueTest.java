@@ -16,10 +16,9 @@
 
 package com.github.edfiallianceoss.kafka.connect.transforms;
 
-import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
 
-public class ExtractTopicValueTest extends ExtractTopicTest {
+public class GenerateIndexFromResourceValueTest extends GenerateIndexFromResourceTest {
 
     @Override
     protected String dataPlace() {
@@ -27,8 +26,8 @@ public class ExtractTopicValueTest extends ExtractTopicTest {
     }
 
     @Override
-    protected ExtractTopic<SinkRecord> createTransformationObject() {
-        return new ExtractTopic.Value<>();
+    protected GenerateIndexFromResource<SinkRecord> createTransformationObject() {
+        return new GenerateIndexFromResource.Value<>();
     }
 
     @Override

@@ -21,12 +21,9 @@ import java.util.Map;
 
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.data.SchemaBuilder;
-import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.sink.SinkRecord;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -34,7 +31,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-abstract class ExtractTopicTest {
+abstract class GenerateIndexFromResourceTest {
 
     private static final String FIELD = "test_field";
     private static final String NEW_TOPIC = "new_topic";
@@ -194,20 +191,20 @@ abstract class ExtractTopicTest {
         assertThat(result).isEqualTo(setNewTopic(originalRecord, NEW_TOPIC));
     }
 
-    private ExtractTopic<SinkRecord> transformation(final String fieldName, final boolean skipMissingOrNull) {
+    private GenerateIndexFromResource<SinkRecord> transformation(final String fieldName, final boolean skipMissingOrNull) {
         final Map<String, String> props = new HashMap<>();
         if (fieldName != null) {
             props.put("field.name", fieldName);
         }
         props.put("skip.missing.or.null", Boolean.toString(skipMissingOrNull));
-        final ExtractTopic<SinkRecord> transform = createTransformationObject();
+        final GenerateIndexFromResource<SinkRecord> transform = createTransformationObject();
         transform.configure(props);
         return transform;
     }
 
     protected abstract String dataPlace();
 
-    protected abstract ExtractTopic<SinkRecord> createTransformationObject();
+    protected abstract GenerateIndexFromResource<SinkRecord> createTransformationObject();
 
     protected abstract SinkRecord record(final Object data);
 

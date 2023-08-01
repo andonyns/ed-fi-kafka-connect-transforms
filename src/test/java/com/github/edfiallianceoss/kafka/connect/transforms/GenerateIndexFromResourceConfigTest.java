@@ -25,11 +25,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ExtractTopicConfigTest {
+class GenerateIndexFromResourceConfigTest {
     @Test
     void defaults() {
         final Map<String, String> props = new HashMap<>();
-        final ExtractTopicConfig config = new ExtractTopicConfig(props);
+        final GenerateIndexFromResourceConfig config = new GenerateIndexFromResourceConfig(props);
         assertThat(config.fieldName()).isNotPresent();
         assertThat(config.skipMissingOrNull()).isFalse();
     }
@@ -39,7 +39,7 @@ class ExtractTopicConfigTest {
     void skipMissingOrNull(final boolean skipMissingOrNull) {
         final Map<String, String> props = new HashMap<>();
         props.put("skip.missing.or.null", Boolean.toString(skipMissingOrNull));
-        final ExtractTopicConfig config = new ExtractTopicConfig(props);
+        final GenerateIndexFromResourceConfig config = new GenerateIndexFromResourceConfig(props);
         assertThat(config.skipMissingOrNull()).isEqualTo(skipMissingOrNull);
     }
 
@@ -47,7 +47,7 @@ class ExtractTopicConfigTest {
     void emptyFieldName() {
         final Map<String, String> props = new HashMap<>();
         props.put("field.name", "");
-        final ExtractTopicConfig config = new ExtractTopicConfig(props);
+        final GenerateIndexFromResourceConfig config = new GenerateIndexFromResourceConfig(props);
         assertThat(config.fieldName()).isNotPresent();
     }
 
@@ -55,7 +55,7 @@ class ExtractTopicConfigTest {
     void definedFieldName() {
         final Map<String, String> props = new HashMap<>();
         props.put("field.name", "test");
-        final ExtractTopicConfig config = new ExtractTopicConfig(props);
+        final GenerateIndexFromResourceConfig config = new GenerateIndexFromResourceConfig(props);
         assertThat(config.fieldName()).hasValue("test");
     }
 }
