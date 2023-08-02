@@ -12,26 +12,24 @@ more details about configuring transformations on how to install transforms.
 
 ### `GenerateIndexFromResource`
 
-This transformation builds an index based on a group of values contained in the body of the result, separated by $.
+This transformation builds an index based on a group of values contained in the
+body of the result, separated by $.
 
-- `com.github.edfiallianceoss.kafka.connect.transforms.GenerateIndexFromResource$Value` -
-  works on values.
+- `com.github.edfiallianceoss.kafka.connect.transforms.GenerateIndexFromResource$Value`
+  - works on values.
 
 The transformation defines the following configurations:
 
-- `field.name` - The name of the field which should be used as the topic name.
-  If `null` or empty, the entire key or value is used (and assumed to be a
-  string). By default is `null`.
-- `skip.missing.or.null` - In case the source of the new topic name is `null` or
-  missing, should a record be silently passed without transformation. By
-  default, is `false`.
+- `field.name` - Comma separated list of fields to be included into building the
+  Index. This fields will be separated by $ and will add `descriptor` at the end
+  if resource is marked as such.
 
 Here is an example of this transformation configuration:
 
 ```properties
 transforms=GenerateIndexFromResource
 transforms.GenerateIndexFromResource.type=com.github.edfiallianceoss.kafka.connect.transforms.GenerateIndexFromResource$Value
-transforms.GenerateIndexFromResource.field.name=inner_field_name
+transforms.GenerateIndexFromResource.field.name=projectName,resourceVersion,resourceName
 ```
 
 ## License
