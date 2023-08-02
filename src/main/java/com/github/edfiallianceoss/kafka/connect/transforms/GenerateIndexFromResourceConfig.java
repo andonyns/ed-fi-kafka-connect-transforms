@@ -25,13 +25,7 @@ import org.apache.kafka.common.config.ConfigDef;
 class GenerateIndexFromResourceConfig extends AbstractConfig {
     public static final String FIELD_NAME_CONFIG = "field.name";
     private static final String FIELD_NAME_DOC =
-        "The name of the field which should be used as the topic name. "
-        + "If null or empty, the entire key or value is used (and assumed to be a string).";
-
-    public static final String SKIP_MISSING_OR_NULL_CONFIG = "skip.missing.or.null";
-    private static final String SKIP_MISSING_OR_NULL_DOC =
-        "In case the source of the new topic name is null or missing, "
-        + "should a record be silently passed without transformation.";
+        "The list of properties separated by comma which should be used as the topic name. ";
 
     GenerateIndexFromResourceConfig(final Map<?, ?> originals) {
         super(config(), originals);
@@ -44,13 +38,7 @@ class GenerateIndexFromResourceConfig extends AbstractConfig {
                 ConfigDef.Type.STRING,
                 null,
                 ConfigDef.Importance.HIGH,
-                FIELD_NAME_DOC)
-            .define(
-                SKIP_MISSING_OR_NULL_CONFIG,
-                ConfigDef.Type.BOOLEAN,
-                false,
-                ConfigDef.Importance.LOW,
-                SKIP_MISSING_OR_NULL_DOC);
+                FIELD_NAME_DOC);
     }
 
     Optional<String> fieldName() {
@@ -59,9 +47,5 @@ class GenerateIndexFromResourceConfig extends AbstractConfig {
             return Optional.empty();
         }
         return Optional.of(rawFieldName);
-    }
-
-    boolean skipMissingOrNull() {
-        return getBoolean(SKIP_MISSING_OR_NULL_CONFIG);
     }
 }

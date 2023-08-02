@@ -20,28 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GenerateIndexFromResourceConfigTest {
-    @Test
-    void defaults() {
-        final Map<String, String> props = new HashMap<>();
-        final GenerateIndexFromResourceConfig config = new GenerateIndexFromResourceConfig(props);
-        assertThat(config.fieldName()).isNotPresent();
-        assertThat(config.skipMissingOrNull()).isFalse();
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void skipMissingOrNull(final boolean skipMissingOrNull) {
-        final Map<String, String> props = new HashMap<>();
-        props.put("skip.missing.or.null", Boolean.toString(skipMissingOrNull));
-        final GenerateIndexFromResourceConfig config = new GenerateIndexFromResourceConfig(props);
-        assertThat(config.skipMissingOrNull()).isEqualTo(skipMissingOrNull);
-    }
 
     @Test
     void emptyFieldName() {

@@ -1,22 +1,11 @@
-/*
- * Copyright 2019 Aiven Oy
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-License-Identifier: Apache-2.0
+
+// Licensed to the Ed-Fi Alliance under one or more agreements.
+// The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+// See the LICENSE and NOTICES files in the project root for more information.
 
 package com.github.edfiallianceoss.kafka.connect.transforms;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,17 +19,6 @@ import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.transforms.Transformation;
 
 public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> implements Transformation<R> {
-
-    private static final List<Class<?>> SUPPORTED_VALUE_CLASS_TO_CONVERT_FROM = Arrays.asList(
-        Byte.class,
-        Short.class,
-        Integer.class,
-        Long.class,
-        Double.class,
-        Float.class,
-        Boolean.class,
-        String.class
-    );
 
     private GenerateIndexFromResourceConfig config;
 
@@ -121,11 +99,11 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
 
         final Optional<String> result = Optional.ofNullable(valueMap.get(fieldName))
             .map(field -> {
-                if (!SUPPORTED_VALUE_CLASS_TO_CONVERT_FROM.contains(field.getClass())) {
+                if (!field.getClass().equals(String.class)) {
                     throw new DataException(fieldName + " type in " + dataPlace()
                         + " " + value
-                        + " must be " + SUPPORTED_VALUE_CLASS_TO_CONVERT_FROM
-                        + ": " + recordStr);
+                        + " must be a comma separated string: "
+                        + recordStr);
                 }
                 return field;
             })
@@ -134,11 +112,7 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
         if (result.isPresent() && !result.get().isBlank()) {
             return result;
         } else {
-            if (config.skipMissingOrNull()) {
-                return Optional.empty();
-            } else {
-                throw new DataException(fieldName + " in " + dataPlace() + " can't be null or empty: " + recordStr);
-            }
+            throw new DataException(fieldName + " in " + dataPlace() + " can't be null or empty: " + recordStr);
         }
     }
 

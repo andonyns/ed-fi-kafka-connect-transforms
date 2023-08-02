@@ -51,51 +51,7 @@ abstract class GenerateIndexFromResourceTest {
         final SinkRecord originalRecord = record(new HashMap<String, Object>());
         assertThatThrownBy(() -> transformation(null, skipMissingOrNull).apply(originalRecord))
             .isInstanceOf(DataException.class)
-            .hasMessage("type in " + dataPlace() + " {} must be "
-                + "[class java.lang.Byte, class java.lang.Short, class java.lang.Integer, "
-                + "class java.lang.Long, class java.lang.Double, class java.lang.Float, "
-                + "class java.lang.Boolean, class java.lang.String]: " + originalRecord);
-    }
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    void noFieldName_NullOrEmptyValue_NoSkip(final String value) {
-        final SinkRecord originalRecord = record(value);
-        assertThatThrownBy(() -> transformation(null, false).apply(originalRecord))
-            .isInstanceOf(DataException.class)
-            .hasMessage(dataPlace() + " can't be null or empty: " + originalRecord);
-    }
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    void noFieldName_NullOrEmptyValue_Skip(final String value) {
-        final SinkRecord originalRecord = record(value);
-        final SinkRecord result = transformation(null, true).apply(originalRecord);
-        assertThat(result).isEqualTo(originalRecord);
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void noFieldName_NormalInt64Value() {
-        final SinkRecord originalRecord = record(123L);
-        final SinkRecord result = transformation(null, false).apply(originalRecord);
-        assertThat(result).isEqualTo(setNewTopic(originalRecord, "123"));
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void noFieldName_NormalBooleanValue() {
-        final SinkRecord originalRecord = record(false);
-        final SinkRecord result = transformation(null, false).apply(originalRecord);
-        assertThat(result).isEqualTo(setNewTopic(originalRecord, "false"));
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void noFieldName_NormalStringValue() {
-        final SinkRecord originalRecord = record(NEW_TOPIC);
-        final SinkRecord result = transformation(null, false).apply(originalRecord);
-        assertThat(result).isEqualTo(setNewTopic(originalRecord, NEW_TOPIC));
+            .hasMessage("value must specify one or more field names comma separated.");
     }
 
     @ParameterizedTest
@@ -124,16 +80,13 @@ abstract class GenerateIndexFromResourceTest {
         assertThatThrownBy(() -> transformation(FIELD, skipMissingOrNull).apply(originalRecord))
             .isInstanceOf(DataException.class)
             .hasMessage(FIELD + " type in " + dataPlace()
-                + " " + field + " must be "
-                + "[class java.lang.Byte, class java.lang.Short, class java.lang.Integer, "
-                + "class java.lang.Long, class java.lang.Double, class java.lang.Float, "
-                + "class java.lang.Boolean, class java.lang.String]: " + originalRecord);
+                + " " + field + " must be a comma separated string: " + originalRecord);
     }
 
     @ParameterizedTest
     @ValueSource(strings = "missing")
     @NullAndEmptySource
-    void fieldName_NullOrEmptyValue_NoSkip(final String value) {
+    void fieldName_NullOrEmptyValue(final String value) {
         final Map<String, Object> valueMap = new HashMap<>();
         valueMap.put("another", "value");
         if (!"missing".equals(value)) {
@@ -143,42 +96,6 @@ abstract class GenerateIndexFromResourceTest {
         assertThatThrownBy(() -> transformation(FIELD, false).apply(originalRecord))
             .isInstanceOf(DataException.class)
             .hasMessage(FIELD + " in " + dataPlace() + " can't be null or empty: " + originalRecord);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = "missing")
-    @NullAndEmptySource
-    void fieldName_NullOrEmptyValueOrMissingField_Skip(final String value) {
-        final Map<String, Object> valueMap = new HashMap<>();
-        valueMap.put("another", "value");
-        if (!"missing".equals(value)) {
-            valueMap.put(FIELD, value);
-        }
-        final SinkRecord originalRecord = record(valueMap);
-        final SinkRecord result = transformation(FIELD, true).apply(originalRecord);
-        assertThat(result).isEqualTo(originalRecord);
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void fieldName_NormalIntValue() {
-        final SinkRecord originalRecord;
-        final var fieldValue = 123L;
-        final var value = Map.of(FIELD, fieldValue);
-        originalRecord = record(value);
-        final SinkRecord result = transformation(FIELD, true).apply(originalRecord);
-        assertThat(result).isEqualTo(setNewTopic(originalRecord, "123"));
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void fieldName_NormalBooleanValue() {
-        final SinkRecord originalRecord;
-        final var fieldValue = false;
-        final var value = Map.of(FIELD, fieldValue);
-        originalRecord = record(value);
-        final SinkRecord result = transformation(FIELD, true).apply(originalRecord);
-        assertThat(result).isEqualTo(setNewTopic(originalRecord, "false"));
     }
 
     @ParameterizedTest
@@ -197,7 +114,6 @@ abstract class GenerateIndexFromResourceTest {
         if (fieldName != null) {
             props.put("field.name", fieldName);
         }
-        props.put("skip.missing.or.null", Boolean.toString(skipMissingOrNull));
         final GenerateIndexFromResource<SinkRecord> transform = createTransformationObject();
         transform.configure(props);
         return transform;
