@@ -116,18 +116,6 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
         }
     }
 
-    public static class Key<R extends ConnectRecord<R>> extends GenerateIndexFromResource<R> {
-        @Override
-        protected SchemaAndValue getSchemaAndValue(final R record) {
-            return new SchemaAndValue(record.keySchema(), record.key());
-        }
-
-        @Override
-        protected String dataPlace() {
-            return "key";
-        }
-    }
-
     public static class Value<R extends ConnectRecord<R>> extends GenerateIndexFromResource<R> {
         @Override
         protected SchemaAndValue getSchemaAndValue(final R record) {
