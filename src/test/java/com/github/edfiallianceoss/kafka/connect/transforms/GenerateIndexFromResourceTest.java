@@ -23,7 +23,7 @@ import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.sink.SinkRecord;
-
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -36,48 +36,43 @@ abstract class GenerateIndexFromResourceTest {
     private static final String FIELD = "test_field";
     private static final String NEW_TOPIC = "new_topic";
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void nullSchema(final boolean skipMissingOrNull) {
+    @Test
+    void nullSchema() {
         final SinkRecord originalRecord = record(null);
-        assertThatThrownBy(() -> transformation(FIELD, skipMissingOrNull).apply(originalRecord))
+        assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
             .isInstanceOf(DataException.class)
             .hasMessage(dataPlace() + " can't be null if field name is specified: " + originalRecord);
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void noFieldName_UnsupportedValueType(final boolean skipMissingOrNull) {
+    @Test
+    void noFieldName_UnsupportedValueType() {
         final SinkRecord originalRecord = record(new HashMap<String, Object>());
-        assertThatThrownBy(() -> transformation(null, skipMissingOrNull).apply(originalRecord))
+        assertThatThrownBy(() -> transformation(null).apply(originalRecord))
             .isInstanceOf(DataException.class)
             .hasMessage("value must specify one or more field names comma separated.");
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void fieldName_NonMap(final boolean skipMissingOrNull) {
+    @Test
+    void fieldName_NonMap() {
         final SinkRecord originalRecord = record("some");
-        assertThatThrownBy(() -> transformation(FIELD, skipMissingOrNull).apply(originalRecord))
+        assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
             .isInstanceOf(DataException.class)
             .hasMessage(dataPlace() + " type must be Map if field name is specified: " + originalRecord);
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void fieldName_NullStruct(final boolean skipMissingOrNull) {
+    @Test
+    void fieldName_NullStruct() {
         final SinkRecord originalRecord = record(null);
-        assertThatThrownBy(() -> transformation(FIELD, skipMissingOrNull).apply(originalRecord))
+        assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
             .isInstanceOf(DataException.class)
             .hasMessage(dataPlace() + " can't be null if field name is specified: " + originalRecord);
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void fieldName_UnsupportedSchemaTypeInField(final boolean skipMissingOrNull) {
+    @Test
+    void fieldName_UnsupportedSchemaTypeInField() {
         final var field = Map.of(FIELD, Map.of());
         final SinkRecord originalRecord = record(field);
-        assertThatThrownBy(() -> transformation(FIELD, skipMissingOrNull).apply(originalRecord))
+        assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
             .isInstanceOf(DataException.class)
             .hasMessage(FIELD + " type in " + dataPlace()
                 + " " + field + " must be a comma separated string: " + originalRecord);
@@ -93,23 +88,22 @@ abstract class GenerateIndexFromResourceTest {
             valueMap.put(FIELD, value);
         }
         final SinkRecord originalRecord = record(valueMap);
-        assertThatThrownBy(() -> transformation(FIELD, false).apply(originalRecord))
+        assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
             .isInstanceOf(DataException.class)
             .hasMessage(FIELD + " in " + dataPlace() + " can't be null or empty: " + originalRecord);
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
+    @Test
     void fieldName_NormalStringValue() {
         final SinkRecord originalRecord;
         final var value = Map.of(FIELD, NEW_TOPIC);
         originalRecord = record(value);
-        final SinkRecord result = transformation(FIELD, true).apply(originalRecord);
+        final SinkRecord result = transformation(FIELD).apply(originalRecord);
         assertThat(result).isEqualTo(setNewTopic(originalRecord, NEW_TOPIC));
     }
 
-    private GenerateIndexFromResource<SinkRecord> transformation(final String fieldName, 
-                                                                 final boolean skipMissingOrNull) {
+    private GenerateIndexFromResource<SinkRecord> transformation(final String fieldName) {
+
         final Map<String, String> props = new HashMap<>();
         if (fieldName != null) {
             props.put("field.name", fieldName);
