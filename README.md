@@ -32,16 +32,15 @@ transforms.GenerateIndexFromResource.type=com.github.edfiallianceoss.kafka.conne
 transforms.GenerateIndexFromResource.field.name=projectName,resourceVersion,resourceName
 ```
 
-## License
+## Legal Information
 
-This project is licensed under the [Apache License, Version 2.0](LICENSE).
+Copyright (c) 2023 Ed-Fi Alliance, LLC and contributors.
 
-The transformation `GenerateIndexFromResource` is based on the [ExtractTopic
-transformation](https://github.com/Aiven-Open/transforms-for-apache-kafka-connect/blob/master/src/main/java/io/aiven/kafka/connect/transforms/ExtractTopic.java)
-by Aiven Open. Licensed under Apache License, Version 2.0.
+Licensed under the [Apache License, Version 2.0](https://github.com/Ed-Fi-Exchange-OSS/Meadowlark/blob/main/LICENSE) (the "License").
 
-## Trademarks
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
 
-Apache Kafka and Apache Kafka Connect are either registered trademarks or
-trademarks of the Apache Software Foundation in the United States and/or other
-countries.
+See [NOTICES](https://github.com/Ed-Fi-Exchange-OSS/Meadowlark/blob/main/NOTICES.md) for additional copyright and license notifications.
