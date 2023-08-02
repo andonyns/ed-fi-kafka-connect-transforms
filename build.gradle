@@ -79,12 +79,6 @@ test {
     }
 }
 
-processResources {
-    filesMatching('ed-fi-kafka-connect-transforms-version.properties') {
-        expand(version: version)
-    }
-}
-
 jar {
     manifest {
         attributes(

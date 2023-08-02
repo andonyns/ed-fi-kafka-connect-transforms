@@ -5,11 +5,12 @@
  *  See the LICENSE and NOTICES files in the project root for more information.
  */
 
-
 package com.github.edfiallianceoss.kafka.connect.transforms;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.connect.data.Schema;
@@ -33,32 +34,32 @@ abstract class GenerateIndexFromResourceTest {
     void nullSchema() {
         final SinkRecord originalRecord = record(null);
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
-            .isInstanceOf(DataException.class)
-            .hasMessage(dataPlace() + " can't be null if field name is specified: " + originalRecord);
+                .isInstanceOf(DataException.class)
+                .hasMessage(dataPlace() + " can't be null if field name is specified: " + originalRecord);
     }
 
     @Test
     void noFieldName_UnsupportedValueType() {
         final SinkRecord originalRecord = record(new HashMap<String, Object>());
         assertThatThrownBy(() -> transformation(null).apply(originalRecord))
-            .isInstanceOf(DataException.class)
-            .hasMessage("value must specify one or more field names comma separated.");
+                .isInstanceOf(DataException.class)
+                .hasMessage("value must specify one or more field names comma separated.");
     }
 
     @Test
     void fieldName_NonMap() {
         final SinkRecord originalRecord = record("some");
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
-            .isInstanceOf(DataException.class)
-            .hasMessage(dataPlace() + " type must be Map if field name is specified: " + originalRecord);
+                .isInstanceOf(DataException.class)
+                .hasMessage(dataPlace() + " type must be Map if field name is specified: " + originalRecord);
     }
 
     @Test
     void fieldName_NullStruct() {
         final SinkRecord originalRecord = record(null);
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
-            .isInstanceOf(DataException.class)
-            .hasMessage(dataPlace() + " can't be null if field name is specified: " + originalRecord);
+                .isInstanceOf(DataException.class)
+                .hasMessage(dataPlace() + " can't be null if field name is specified: " + originalRecord);
     }
 
     @Test
@@ -66,9 +67,9 @@ abstract class GenerateIndexFromResourceTest {
         final var field = Map.of(FIELD, Map.of());
         final SinkRecord originalRecord = record(field);
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
-            .isInstanceOf(DataException.class)
-            .hasMessage(FIELD + " type in " + dataPlace()
-                + " " + field + " must be a comma separated string: " + originalRecord);
+                .isInstanceOf(DataException.class)
+                .hasMessage(FIELD + " type in " + dataPlace()
+                        + " " + field + " must be a comma separated string: " + originalRecord);
     }
 
     @ParameterizedTest
@@ -82,8 +83,8 @@ abstract class GenerateIndexFromResourceTest {
         }
         final SinkRecord originalRecord = record(valueMap);
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
-            .isInstanceOf(DataException.class)
-            .hasMessage(FIELD + " in " + dataPlace() + " can't be null or empty: " + originalRecord);
+                .isInstanceOf(DataException.class)
+                .hasMessage(FIELD + " in " + dataPlace() + " can't be null or empty: " + originalRecord);
     }
 
     @Test
@@ -93,6 +94,34 @@ abstract class GenerateIndexFromResourceTest {
         originalRecord = record(value);
         final SinkRecord result = transformation(FIELD).apply(originalRecord);
         assertThat(result).isEqualTo(setNewTopic(originalRecord, NEW_TOPIC));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "true", "false" })
+    void generateIndex_correctValues(final String isDescriptor) {
+        final SinkRecord originalRecord;
+        final var project = "project";
+        final var resourceVersion = "resourceVersion";
+        final var resourceName = "resourceName";
+
+        final Map<String, String> savedData = Stream.of(new String[][] {
+                { "project", project },
+                { "resourceVersion", resourceVersion },
+                { "resourceName", resourceName },
+                { "additionalData", "additionalData" },
+                { "isDescriptor", isDescriptor },
+        }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+
+        originalRecord = record(savedData);
+
+        final var params = project + "," + resourceVersion + "," + resourceName;
+        var expectedResult = project + "$" + resourceVersion + "$" + resourceName;
+        if(isDescriptor.equals("true")) {
+            expectedResult += "descriptor";
+        }
+
+        final SinkRecord result = transformation(params).apply(originalRecord);
+        assertThat(result).isEqualTo(setNewTopic(originalRecord, expectedResult));
     }
 
     private GenerateIndexFromResource<SinkRecord> transformation(final String fieldName) {
@@ -113,25 +142,24 @@ abstract class GenerateIndexFromResourceTest {
     protected abstract SinkRecord record(final Object data);
 
     protected SinkRecord record(final Schema keySchema,
-                                final Object key,
-                                final Schema valueSchema,
-                                final Object value) {
+            final Object key,
+            final Schema valueSchema,
+            final Object value) {
         return new SinkRecord("original_topic", 0,
-            keySchema, key,
-            valueSchema, value,
-            123L,
-            456L, TimestampType.CREATE_TIME);
+                keySchema, key,
+                valueSchema, value,
+                123L,
+                456L, TimestampType.CREATE_TIME);
     }
 
     private SinkRecord setNewTopic(final SinkRecord record, final String newTopic) {
         return record.newRecord(newTopic,
-            record.kafkaPartition(),
-            record.keySchema(),
-            record.key(),
-            record.valueSchema(),
-            record.value(),
-            record.timestamp(),
-            record.headers()
-        );
+                record.kafkaPartition(),
+                record.keySchema(),
+                record.key(),
+                record.valueSchema(),
+                record.value(),
+                record.timestamp(),
+                record.headers());
     }
 }
