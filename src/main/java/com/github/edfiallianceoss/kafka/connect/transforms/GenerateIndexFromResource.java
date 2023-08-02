@@ -41,7 +41,7 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
         final Optional<String> newTopic;
 
         if (!config.fieldName().isPresent()) {
-            throw new DataException(dataPlace() + " must specify one or more field names comma separated.");
+            throw new DataException("value must specify one or more field names comma separated.");
         }
 
         final List<String> fieldList = Stream.of(config.fieldName().get().split(","))
@@ -82,19 +82,17 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
         }
     }
 
-    protected abstract String dataPlace();
-
     protected abstract SchemaAndValue getSchemaAndValue(final R record);
 
     private Optional<String> topicNameFromNamedField(final String recordStr,
                                                                final Object value,
                                                                final String fieldName) {
         if (value == null) {
-            throw new DataException(dataPlace() + " can't be null if field name is specified: " + recordStr);
+            throw new DataException("value can't be null: " + recordStr);
         }
 
         if (!(value instanceof Map)) {
-            throw new DataException(dataPlace() + " type must be Map if field name is specified: " + recordStr);
+            throw new DataException("value type must be an object: " + recordStr);
         }
 
         @SuppressWarnings("unchecked") final Map<String, Object> valueMap = (Map<String, Object>) value;
@@ -102,8 +100,8 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
         final Optional<String> result = Optional.ofNullable(valueMap.get(fieldName))
             .map(field -> {
                 if (!field.getClass().equals(String.class)) {
-                    throw new DataException(fieldName + " type in " + dataPlace()
-                        + " " + value
+                    throw new DataException(fieldName + " type in value "
+                        + value
                         + " must be a comma separated string: "
                         + recordStr);
                 }
@@ -114,7 +112,7 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
         if (result.isPresent() && !result.get().isBlank()) {
             return result;
         } else {
-            throw new DataException(fieldName + " in " + dataPlace() + " can't be null or empty: " + recordStr);
+            throw new DataException(fieldName + " in value can't be null or empty: " + recordStr);
         }
     }
 
@@ -122,11 +120,6 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
         @Override
         protected SchemaAndValue getSchemaAndValue(final R record) {
             return new SchemaAndValue(record.valueSchema(), record.value());
-        }
-
-        @Override
-        protected String dataPlace() {
-            return "value";
         }
     }
 

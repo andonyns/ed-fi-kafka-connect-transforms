@@ -35,11 +35,11 @@ abstract class GenerateIndexFromResourceTest {
         final SinkRecord originalRecord = record(null);
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
                 .isInstanceOf(DataException.class)
-                .hasMessage(dataPlace() + " can't be null if field name is specified: " + originalRecord);
+                .hasMessage("value can't be null: " + originalRecord);
     }
 
     @Test
-    void noFieldName_UnsupportedValueType() {
+    void generateIndex_UnsupportedValueType() {
         final SinkRecord originalRecord = record(new HashMap<String, Object>());
         assertThatThrownBy(() -> transformation(null).apply(originalRecord))
                 .isInstanceOf(DataException.class)
@@ -47,35 +47,35 @@ abstract class GenerateIndexFromResourceTest {
     }
 
     @Test
-    void fieldName_NonMap() {
+    void generateIndex_NonObject() {
         final SinkRecord originalRecord = record("some");
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
                 .isInstanceOf(DataException.class)
-                .hasMessage(dataPlace() + " type must be Map if field name is specified: " + originalRecord);
+                .hasMessage("value type must be an object: " + originalRecord);
     }
 
     @Test
-    void fieldName_NullStruct() {
+    void generateIndex_NullStruct() {
         final SinkRecord originalRecord = record(null);
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
                 .isInstanceOf(DataException.class)
-                .hasMessage(dataPlace() + " can't be null if field name is specified: " + originalRecord);
+                .hasMessage("value can't be null: " + originalRecord);
     }
 
     @Test
-    void fieldName_UnsupportedSchemaTypeInField() {
+    void generateIndex_NotReceivingExpectedObject() {
         final var field = Map.of(FIELD, Map.of());
         final SinkRecord originalRecord = record(field);
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
                 .isInstanceOf(DataException.class)
-                .hasMessage(FIELD + " type in " + dataPlace()
-                        + " " + field + " must be a comma separated string: " + originalRecord);
+                .hasMessage(FIELD + " type in value "
+                            + field + " must be a comma separated string: " + originalRecord);
     }
 
     @ParameterizedTest
     @ValueSource(strings = "missing")
     @NullAndEmptySource
-    void fieldName_NullOrEmptyValue(final String value) {
+    void generateIndex_ReceivingObject_NullOrEmptyValue(final String value) {
         final Map<String, Object> valueMap = new HashMap<>();
         valueMap.put("another", "value");
         if (!"missing".equals(value)) {
@@ -84,27 +84,27 @@ abstract class GenerateIndexFromResourceTest {
         final SinkRecord originalRecord = record(valueMap);
         assertThatThrownBy(() -> transformation(FIELD).apply(originalRecord))
                 .isInstanceOf(DataException.class)
-                .hasMessage(FIELD + " in " + dataPlace() + " can't be null or empty: " + originalRecord);
+                .hasMessage(FIELD + " in value can't be null or empty: " + originalRecord);
     }
 
     @Test
-    void fieldName_NormalStringValue() {
+    void generateIndex_ReceivingObject_NormalStringValue() {
         final SinkRecord originalRecord;
-        final var value = Map.of(FIELD, NEW_TOPIC);
-        originalRecord = record(value);
+        final var receivedObject = Map.of(FIELD, NEW_TOPIC);
+        originalRecord = record(receivedObject);
         final SinkRecord result = transformation(FIELD).apply(originalRecord);
         assertThat(result).isEqualTo(setNewTopic(originalRecord, NEW_TOPIC));
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "true", "false" })
-    void generateIndex_correctValues(final String isDescriptor) {
+    void generateIndex_ReceivingObject_WithCommaSeparatedList(final String isDescriptor) {
         final SinkRecord originalRecord;
         final var project = "project";
         final var resourceVersion = "resourceVersion";
         final var resourceName = "resourceName";
 
-        final Map<String, String> savedData = Stream.of(new String[][] {
+        final Map<String, String> receivedObject = Stream.of(new String[][] {
                 { "project", project },
                 { "resourceVersion", resourceVersion },
                 { "resourceName", resourceName },
@@ -112,7 +112,7 @@ abstract class GenerateIndexFromResourceTest {
                 { "isDescriptor", isDescriptor },
         }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
-        originalRecord = record(savedData);
+        originalRecord = record(receivedObject);
 
         final var params = project + "," + resourceVersion + "," + resourceName;
         var expectedResult = project + "$" + resourceVersion + "$" + resourceName;
@@ -134,8 +134,6 @@ abstract class GenerateIndexFromResourceTest {
         transform.configure(props);
         return transform;
     }
-
-    protected abstract String dataPlace();
 
     protected abstract GenerateIndexFromResource<SinkRecord> createTransformationObject();
 

@@ -12,11 +12,6 @@ import org.apache.kafka.connect.sink.SinkRecord;
 public class GenerateIndexFromResourceValueTest extends GenerateIndexFromResourceTest {
 
     @Override
-    protected String dataPlace() {
-        return "value";
-    }
-
-    @Override
     protected GenerateIndexFromResource<SinkRecord> createTransformationObject() {
         return new GenerateIndexFromResource.Value<>();
     }
