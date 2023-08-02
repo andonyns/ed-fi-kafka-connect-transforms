@@ -28,7 +28,7 @@ Here is an example of this transformation configuration:
 
 ```properties
 transforms=GenerateIndexFromResource
-transforms.GenerateIndexFromResource.type=com.github.edfiallianceoss.kafka.connect.transforms.GenerateIndexFromResource$Value
+transforms.GenerateIndexFromResource.type=com.github.edfiallianceoss.kafka.connect.transforms.GenerateIndexFromResource
 transforms.GenerateIndexFromResource.field.name=projectName,resourceVersion,resourceName
 ```
 
