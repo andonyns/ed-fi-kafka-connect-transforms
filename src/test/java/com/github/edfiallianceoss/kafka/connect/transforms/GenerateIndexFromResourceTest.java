@@ -25,7 +25,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-abstract class GenerateIndexFromResourceTest {
+class GenerateIndexFromResourceTest {
 
     private static final String FIELD = "test_field";
     private static final String NEW_TOPIC = "new_topic";
@@ -135,9 +135,13 @@ abstract class GenerateIndexFromResourceTest {
         return transform;
     }
 
-    protected abstract GenerateIndexFromResource<SinkRecord> createTransformationObject();
+    protected GenerateIndexFromResource<SinkRecord> createTransformationObject() {
+        return new GenerateIndexFromResource<>();
+    }
 
-    protected abstract SinkRecord record(final Object data);
+    protected SinkRecord record(final Object data) {
+        return record(null, null, null, data);
+    }
 
     protected SinkRecord record(final Schema keySchema,
             final Object key,

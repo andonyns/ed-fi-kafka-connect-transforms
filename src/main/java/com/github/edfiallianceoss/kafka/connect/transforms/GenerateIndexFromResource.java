@@ -20,7 +20,7 @@ import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.transforms.Transformation;
 
-public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> implements Transformation<R> {
+public class GenerateIndexFromResource<R extends ConnectRecord<R>> implements Transformation<R> {
 
     private GenerateIndexFromResourceConfig config;
 
@@ -82,7 +82,9 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
         }
     }
 
-    protected abstract SchemaAndValue getSchemaAndValue(final R record);
+    protected SchemaAndValue getSchemaAndValue(final R record) {
+            return new SchemaAndValue(record.valueSchema(), record.value());
+    }
 
     private Optional<String> topicNameFromNamedField(final String recordStr,
                                                                final Object value,
@@ -113,13 +115,6 @@ public abstract class GenerateIndexFromResource<R extends ConnectRecord<R>> impl
             return result;
         } else {
             throw new DataException(fieldName + " in value can't be null or empty: " + recordStr);
-        }
-    }
-
-    public static class Value<R extends ConnectRecord<R>> extends GenerateIndexFromResource<R> {
-        @Override
-        protected SchemaAndValue getSchemaAndValue(final R record) {
-            return new SchemaAndValue(record.valueSchema(), record.value());
         }
     }
 
